@@ -4,13 +4,15 @@ Pour ceux que ça intéresse, j'ai fait un automatisme largement inspiré du blo
 http://clement.storck.me/blog/2014/08/controle-et-supervision-de-la-piscine/
 
 Pour les fonctions/informations, il intègre:
-- remontée de la température du local (pour la fonction hors-gel)
+- remontée de la température du local
 - remontée de la température de l'eau
 - remontée du Ph
-- remontée du Redox (pour régulation du chlore)
+- remontée du Redox
 - pilotage de l'éclairage à distance
 - pilotage de la pompe à distance
-- automatisme de la pompe 
+- automatisme de la pompe
+- régulation du chlore et mise en sécurité si la température de l'eau est inférieure à 15°C
+- fonction Hors-Gel
 
 Pour la gestion horaire, j'ai gardé la minuterie en façade de mon coffret d'origine.
 
