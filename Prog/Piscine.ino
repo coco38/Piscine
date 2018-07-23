@@ -12,6 +12,8 @@
 //Entrée Ana
 #define PIN_ORP         A0    // Pin de la sonde ORP
 #define PIN_PH          A1    // Pin de la sonde PH
+#define PIN_ORP_ETAL    A2    // Pin pour l'étalonnage de la sonde ORP
+#define PIN_PH_ETAL     A3    // Pin pour l'étalonnage de la sonde PH
 
 //Température
 #define PIN_TEMP_LOCAL  11 // Pin du capteur DS18B20 : Température du local 
@@ -39,8 +41,8 @@
 #define TEMP_GEL_MAX   1.0  // Température d'arrêt du mode antigel
  
 //ORP/Reox
-#define ORP_MIN     650   // Tension (mV) de démarrage de la production de chlore
-#define ORP_MAX     750   // Tension (mV) d'arrêt de la production de chlore
+#define ORP_MIN     660   // Tension (mV) de démarrage de la production de chlore
+#define ORP_MAX     720   // Tension (mV) d'arrêt de la production de chlore
 
 #define TempoMesure 300000  //attente entre chaque mesure
 /******************************************
@@ -245,7 +247,7 @@ void loop() {
   else {
     digitalWrite(PIN_ELECTROLYSE, HIGH);    
   }
-  delay(100);
+  delay(120);
 }
 
 /****************************************************************************
@@ -532,16 +534,21 @@ void lectureEntrees(){
  *  sans objet
  ****************************************************************************/
 void lectureORP(){
-    float value;
-    
-    value = (float)analogRead(PIN_ORP)*VOLT_REFERENCE;
-    value = value / 1024 * 5.5 / 3.3;
-    valORP = (2.5-value)*1000/1.037;
+    int valueADC;
+    float value,ValueEtalon;
+        
+    valueADC = analogRead(PIN_ORP);
+    value = (float)(valueADC) * 1.55 * 1000 * VOLT_REFERENCE / 1024; //1,55: rapport du pont diviseur
+    value = (2080-value)/0.875;
+    valueADC = analogRead(PIN_ORP_ETAL);
+    ValueEtalon = ((float)(valueADC) * 600 / 1024) - 400;
+    valORP = value + ValueEtalon;
 
     Serial.print("ORP: ");Serial.println(valORP);
     
     lcd.setCursor (6, 1);
     lcd.print(valORP);
+    lcd.print("mV ");
     zunoSendReport(8);
 
 }
@@ -551,11 +558,14 @@ void lectureORP(){
  *  sans objet
  ****************************************************************************/
 void lecturePH(){
-    float value;
+    int valueADC;
+    float value,ValueEtalon;
     
-    value = (float)analogRead(PIN_PH)*VOLT_REFERENCE;
-    value = value / 1024 * 5.5 / 3.3;
-    valPH = 7-((2.5-value)/(0.257179+0.000941468*TemperatureEau));
+    valueADC = analogRead(PIN_PH)*VOLT_REFERENCE;
+    value = (float)(valueADC) / 1024 * 1.55; //1,55: rapport du pont diviseur
+    valueADC = analogRead(PIN_PH_ETAL);
+    ValueEtalon = ((float)(valueADC) / 1024 * 4)-1;
+    valPH = 7-((2.5-value)/(0.257179+0.000941468*TemperatureEau))+ValueEtalon;
 
     Serial.print("PH: ");Serial.println(valPH);
     
