@@ -16,11 +16,7 @@ Pour les fonctions/informations, il intègre:
 
 Pour la gestion horaire, j'ai gardé la minuterie en façade de mon coffret d'origine.
 
-Pour le matériel, je suis parti sur:
-- un Z-Uno
-- un afficheur LCD 4x20
-- une carte 4 relais (pilotage du 220V)
-- 2 cartes Phidgets Adaptateur pH/ORP 1130
+Les 2 potentiomètres permettent de recaler les valeurs mesurées (ORP et Ph) pour corriger la dérive des sondes.
 
 La principale différence par rapport au projet du blog citée précédemment, est le passage sur un Z-Uno. J'ai déjà un réseau Zwave et la gestion des commandes et des remontées d'informations à Jeedom est nettement plus facile.
 
