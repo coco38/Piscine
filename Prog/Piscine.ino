@@ -40,7 +40,7 @@
 #define TEMP_GEL_MIN  -0.5  // Température de démarrage du mode antigel
 #define TEMP_GEL_MAX   1.0  // Température d'arrêt du mode antigel
  
-//ORP/Reox
+//ORP/Redox
 #define ORP_MIN     660   // Tension (mV) de démarrage de la production de chlore
 #define ORP_MAX     720   // Tension (mV) d'arrêt de la production de chlore
 
@@ -55,7 +55,7 @@ byte LedState;
 unsigned long PrecMillis = 0;
 
 //ecran lcd
-LiquidCrystal_I2C lcd(0x27, 20, 4);
+LiquidCrystal_I2C lcd(0x3F, 20, 4);
 
 //mode de fonctionnement
 byte modePompe = 0; // 0:arret / 1:marche forcée / 2:auto
@@ -156,9 +156,13 @@ void setup() {
   lcd.setCursor(13,0);
   lcd.print("Eau:");
   lcd.setCursor(0,1);
-  lcd.print("Redox:       Ph:");
+  lcd.print("Redox:       ");
+  lcd.setCursor(13,1);
+  lcd.print("Ph:    ");
   lcd.setCursor(0,2);
-  lcd.print("Mode:ARRET");  
+  lcd.print("Mode:ARRET");
+  lcd.setCursor(13,2);
+  lcd.print("Lum:OFF");
   lcd.setCursor(0,3);
   lcd.print("Pompe:OFF Chlore:OFF"); 
   delay(100);
@@ -220,32 +224,47 @@ void loop() {
   //Mise à jour du fonctionnement de la pompe
   FctPompe();
   
-  //pilotage du relais de la pompe
+  //pilotage du relais de la pompe et mise à jour de l'affichage LCD
+  //Edit 29-Sep-2018
   if(etatPompe){
-    digitalWrite(PIN_POMP_PISCINE,LOW);    
+    digitalWrite(PIN_POMP_PISCINE,LOW);
+    lcd.setCursor (6, 3);
+    lcd.print("ON ");    
   }
   else{
-    digitalWrite(PIN_POMP_PISCINE,HIGH); 
+    digitalWrite(PIN_POMP_PISCINE,HIGH);
+    lcd.setCursor (6, 3);
+    lcd.print("OFF");  
   }
 
   FctLumiere();
   
-  //pilotage du relais de la lumiere
+  //pilotage du relais de la lumiere et mise à jour de l'affichage LCD
+  //Edit 29-Sep-2018 
   if(etatLumiere){
     digitalWrite(PIN_ECL_PISCINE, LOW);
+    lcd.setCursor(17,2);
+    lcd.print("ON ");
   }
   else {
-    digitalWrite(PIN_ECL_PISCINE, HIGH);    
+    digitalWrite(PIN_ECL_PISCINE, HIGH);
+    lcd.setCursor(17,2);
+    lcd.print("OFF");    
   }
 
   FctProdChlore();
   
-  //pilotage du relais de la production de chlore
+  //pilotage du relais de la production de chlore et mise à jour de l'affichage LCD
+  //Edit 29-Sep-2018
   if(etatChloreProd){
     digitalWrite(PIN_ELECTROLYSE, LOW);
+    lcd.setCursor (17, 3);
+    lcd.print("ON ");
   }
   else {
-    digitalWrite(PIN_ELECTROLYSE, HIGH);    
+    digitalWrite(PIN_ELECTROLYSE, HIGH);
+    lcd.setCursor (17, 3);
+    lcd.print("OFF");  
   }
   delay(120);
 }
@@ -280,21 +299,21 @@ void lectureTempEau(){
 
         TemperatureEau = temperature;
         zunoSendReport(7);
-    
+
         lcd.setCursor (17, 0);
         lcd.print((int)temperature);
         lcd.print((char)223); 
       }
       else {
         Serial.println("Temperature de l'eau erronee");
-  
+        
         lcd.setCursor (17, 0);
         lcd.print("TMP");
       }
     }
     else {
       Serial.println("Capteur de temperature de l'eau non trouve!");
-
+      
       lcd.setCursor (17, 0);
       lcd.print("CAP");
     }
@@ -320,7 +339,7 @@ void lectureTempLocal(){
       Serial.println();  
 
       lcd.setCursor (9, 0);
-      lcd.print("   "); // Clean lcd old digits
+      lcd.print("    "); // Clean lcd old digits
         
       //si la lecture est correcte
       temperature = CapteurTempLoc.getTemperature(adresse);
@@ -406,21 +425,21 @@ void FctPompe(){
       etatPompe = false;
   }
 
-  //si l'état de la pompe à changer, on signale au controleur zwave et on met à jour l'affichage LCD
+  //si l'état de la pompe à changer, on signale au controleur zwave
   if(etatPompe != etatPompePrec){
     zunoSendReport(1);
-    Serial.print("Passage de la pompe : "); Serial.println(etatPompe);
-    
-    lcd.setCursor (6, 3);
-    if(etatPompe ==  false){
-      lcd.print("OFF");
-    }
-    else {
-      lcd.print("ON ");      
-    }
+    //Edit 29-Sep-2018
+    //Serial.print("Passage de la pompe : "); Serial.println(etatPompe);
+    //lcd.setCursor (6, 3);
+    //if(etatPompe ==  false){
+    //  lcd.print("OFF");
+    //}
+    //else {
+    //  lcd.print("ON ");      
+    //}
   }
 
-  //si le mode à changer, on signale au controleur zwave
+  //si le mode à changer, on signale au controleur zwave et on met à jour l'affichage LCD
   if(modePompe != modePompePrec){
     zunoSendReport(3);
     Serial.print("Passage en mode : "); Serial.println(modePompe);
@@ -490,15 +509,15 @@ void FctProdChlore(){
     //si le etat de la production de chlore a changé, on signale au controleur zwave et on met à jour l'affichage LCD
     if(etatChloreProd != etatChloreProdPrec){
       zunoSendReport(10);
-      Serial.print("Electrolyseur: "); Serial.println(etatChloreProd);    
-      
-      lcd.setCursor (17, 3);
-      if(etatChloreProd ==  false){
-        lcd.print("OFF");
-      }
-      else {
-        lcd.print("ON ");      
-      }
+      //Edit 29-Sep-2018
+      //Serial.print("Electrolyseur: "); Serial.println(etatChloreProd);    
+      //lcd.setCursor (17, 3);
+      //if(etatChloreProd ==  false){
+      //  lcd.print("OFF");
+      //}
+      //else {
+      //  lcd.print("ON ");      
+      //}
     }
   
 }
@@ -545,10 +564,13 @@ void lectureORP(){
     valORP = value + ValueEtalon;
 
     Serial.print("ORP: ");Serial.println(valORP);
-    
+
+    //Edit 29-Sep-2018
+    lcd.setCursor(0,1);
+    lcd.print("Redox:       ");
     lcd.setCursor (6, 1);
     lcd.print(valORP);
-    lcd.print("mV ");
+    lcd.print("mV");
     zunoSendReport(8);
 
 }
@@ -568,8 +590,11 @@ void lecturePH(){
     valPH = 7-((2.5-value)/(0.257179+0.000941468*TemperatureEau))+ValueEtalon;
 
     Serial.print("PH: ");Serial.println(valPH);
-    
-    lcd.setCursor (16, 1);
+
+    //Edit 29-Sep-2018
+    lcd.setCursor (13,1);
+    lcd.print("Ph:    ");
+    lcd.setCursor (16,1);
     lcd.print(valPH,1);
     zunoSendReport(9);
 }
